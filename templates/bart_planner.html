@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+  		<link rel="stylesheet" href="style.css">
+      <link rel="stylesheet"
+       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+       crossorigin="anonymous">
+		<title>BART TRIP PLANNER</title>
+	</head>
+  <body >
+        <header>
+        <h1 style="color:#191970; font: small-caps bold 32px/1 sans-serif;">
+          Plan your next bart trip
+        </h1>
+      </header>
+    
+      <div class="container" style="background-color:#87CEFA">
+        <div class="row">
+        <p style="font-family: 'Gill Sans', sans-serif; font-size: 16px">Number of times you have visited this page: (</p><p id="numVisits">0</p><p>)</p>
+        </div>
+        <div class="row">
+          {% if message != None%}
+            <p style="color: RED;"> {{ message }}</p>
+          {% endif %}
+        </div>
+        <div class="row">
+          <div class="col-md-3>">
+              <p><br/></p>
+            <form action="/start">
+              Origin:
+              <br/>
+              <select name="source">
+                <option value="{{ stns_list[0].stn_code }}" selected>{{ stns_list[0].name }}</option>
+                {% for station_info in stns_list[1:] %}
+                  <option value="{{ station_info.stn_code }}">{{ station_info.name }}</option>
+                {% endfor %}
+              </select>
+              <p><br/><br/></p>
+              Destination:
+              <p></p>
+    
+              <select name="dest">
+                <option value="{{ stns_list[1].stn_code }}" selected>{{ stns_list[1].name }}</option>
+                {% for station_info in stns_list[2:] %}
+                  <option value="{{ station_info.stn_code }}">{{ station_info.name }}</option>
+                {% endfor %}
+              </select>
+              <p><br/><br/></p>
+              <input type="submit">
+            </form>
+          </div>
+          <div class="col-md-2" style="font-family: 'Gill Sans', sans-serif; font-size: 20px">
+            Train departs in: {% if curr_trip %}
+            <div id="timeLeft"></div>
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            {% if curr_trip != None%}
+            <p style="color:#8B4513	;">Origin station Name & Info:</p>
+            <p style="color:firebrick; font: small-caps bold 20px/1 sans-serif;">{{curr_trip['src_info']['name']}}</p>
+              <aside class="currStn">
+                {{curr_trip['src_info']['intro']}}
+              </aside>
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            {% if curr_trip %}
+              <div id="map"></div>
+            {% endif %}
+          </div>
+        </div>
+    
+      {% if curr_trip %}
+        <div class="row" style="font: small-caps bold 20px/1 sans-serif;">
+          <br/>   <br/>   <br/>
+    
+          Trips from {{curr_trip['source']}} to {{curr_trip['destination']}} coming up next:
+          <p><br/><br/>      <br/>
+          </p>
+        </div>
+    
+        <div class="row" style="background-color:antiquewhite">
+        {% for trip in curr_trip['trips'] %}
+          <div class="col-md-3">
+            <div class="row">
+              Leaves at: {{trip['departure_date']}} {{trip['departure_time']}}
+            </div>
+            <div class="row">
+              Arrives at: {{trip['arrival_date']}} {{trip['arrival_time']}}
+            </div>
+            <div class="row">
+              Cost: ${{trip['cost']}}
+            </div>
+            {% if trip['legs'] %}
+              <div class="row">
+                Transfers: {{trip['num_transfers']}}
+                <p><br/><br/></p>
+              </div>
+              {% for leg in trip['legs'] %}
+                <div class="row">
+                  {{leg['origin']}} to {{leg['destination']}}
+                </div>
+                <div class="row">
+                  Leaves at: {{trip['departure_time']}}
+                </div>
+                <div class="row">
+                  Arrives at: {{trip['arrival_time']}}
+                  <p><br/><br/></p>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+      </div>
+    
+      
+    <footer class="footer" style="    left: 0;
+    bottom: 0;
+    width: 100%;
+    opacity: 0.5;
+    color: rgb(68, 3, 3);
+    background: rgb(199, 177, 155);
+    text-align: center;
+    font-size: larger;">
+      COEN 315, SAI RAGHAVENDRA GRANDHI, W1419622
+    </footer>
+    <footer class="footer" style="    left: 0;
+    bottom: 0;
+    width: 100%;
+    opacity: 0.5;
+    color: darkred;
+    background: rgb(172, 204, 192);
+    text-align: center;
+    font-size: large;">
+    PART5: The requests made to BART API are parsed by the Flask backend, at the server. Same-origin policy is only enforced when requests are sent from the browser
+</footer>
+
+    <script>
+        function numVisits() {
+          var visits = Number(localStorage.getItem('numVisits'));
+          var current = Boolean(sessionStorage.getItem('session'));
+      
+          if (!current) {
+            visits++;
+          }
+      
+          localStorage.setItem('numVisits', visits);
+          sessionStorage.setItem('session', true);
+      
+          document.getElementById("numVisits").innerHTML = visits;
+        }
+      
+        window.onload = function () {
+              numVisits();
+          }
+      
+        var next_dept_time = new Date({{curr_trip['next_train'] | safe }}).getTime();
+      
+        var x = setInterval(function() {
+      
+          var now = new Date().getTime();
+      
+          var time_sep = next_dept_time - now;
+      
+          var hours = Math.floor((time_sep % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutes = Math.floor((time_sep % (1000 * 60 * 60)) / (1000 * 60));
+          var seconds = Math.floor((time_sep % (1000 * 60)) / 1000);
+      
+          document.getElementById("timeLeft").innerHTML = hours + "h "
+          + minutes + "m " + seconds + "s ";
+      
+          if (time_sep < 0) {
+            clearInterval(x);
+            document.getElementById("timeLeft").innerHTML = "Train is leaving now.";
+          }
+        }, 1000);
+      
+        function initMap() {
+              var directionsRenderer = new google.maps.DirectionsRenderer;
+              var gmapsService = new google.maps.DirectionsService;
+              var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: {lat: 37.35, lng: -121.93}
+              });
+              directionsRenderer.setMap(map);
+      
+              calculateAndDisplayRoute(gmapsService, directionsRenderer);
+            }
+      
+            function calculateAndDisplayRoute(gmapsService, directionsRenderer) {
+              var selectedMode = 'TRANSIT';
+              var origin_lat = 0;
+              var origin_long = 0;
+              var destination_lat = 0;
+              var destination_long = 0;
+              {% if curr_trip['src_info'] %}
+                origin_lat = {{curr_trip['src_info']['lat']}};
+                origin_long  = {{curr_trip['src_info']['long']}};
+                destination_lat = {{curr_trip['dest_info']['lat']}}
+                destination_long = {{curr_trip['dest_info']['long']}}
+              {% endif %}
+              if (origin_lat !== 0){
+                gmapsService.route({
+                  origin: {lat: origin_lat, lng: origin_long},
+                  destination: {lat: destination_lat, lng: destination_long},
+                  travelMode: google.maps.TravelMode[selectedMode]
+                }, function(response, status) {
+                  if (status == 'OK') {
+                    directionsRenderer.setDirections(response);
+                  } else {
+                    window.alert('Could not get directions. Reason: ' + status);
+                  }
+                });
+              }
+            }
+      
+          setTimeout(function(){
+             window.location.reload(1);
+          }, 30000);
+        </script>
+        <script async defer
+          src="https://maps.googleapis.com/maps/api/js?key={{maps_key}}&callback=initMap">
+          </script>
+  </body>
+</html>

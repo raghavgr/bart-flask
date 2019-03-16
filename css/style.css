@@ -1,0 +1,22 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+  div .row {
+    font-family: 'Gill Sans', sans-serif; 
+    font-size: 14px;
+  }
+  
+  .currStn {
+    height:100%;
+    width:100%;
+    border:4px solid #000080;
+    overflow:auto;
+  }
+  
+  #map {
+    height: 100%;
+  }
+
