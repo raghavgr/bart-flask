@@ -13,3 +13,8 @@
 * `/station` is called after submit
 * `/trips` is called after submit
 * Couldn't get subdomain to work on aws. 
+
+### Screenshot: Working app preview
+<img src="screenshot.png"
+     alt="BART Trip Planner Screenshot. Retrieved locally"
+     style="float: left; margin-right: 10px;" />
