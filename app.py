@@ -8,7 +8,7 @@ app = Flask(__name__, static_folder='css/', static_url_path='')
 BART_BASE_URL = 'http://api.bart.gov/api/'
 BART_API_KEY = '&key=MW9S-E7SL-26DU-VV8V&json=y'
 GOOGLE_MAPS_API_KEY = 'AIzaSyBw8P4oEsNzsqZgCbCcAfRQ--xDnr8m1QU'
-CURRENT_URL = "http://localhost:5000"
+CURRENT_URL = "http://localhost"
 
 
 @app.route('/stations')
@@ -118,4 +118,5 @@ def retrieve_trip(origin: str, dest: str):
     return output_response
 
 if __name__ == '__main__':
-  app.run()
+  #app.run()
+  app.run(host="0.0.0.0", port=80)
